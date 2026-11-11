@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Panel Administrador - Transmisión En Vivo</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif}
 body{background:#0B0B10;color:#fff;height:100vh;overflow:hidden;display:flex;flex-direction:column}
@@ -48,7 +50,7 @@ input:focus,select:focus{border-color:#FF1E2D}
 .cam-item:hover{border-color:#444}
 .cam-item.selected{border-color:#FF1E2D;background:#231418;box-shadow:0 0 0 1px #FF1E2D}
 .cam-thumb{width:72px;height:48px;border-radius:10px;overflow:hidden;background:#000;position:relative;flex-shrink:0}
-.cam-thumb img{width:100%;height:100%;object-fit:cover}
+.cam-thumb video{width:100%;height:100%;object-fit:cover;display:block}
 .cam-thumb .mini-live{position:absolute;top:4px;left:4px;background:#FF1E2D;color:#fff;font-size:8px;font-weight:800;padding:2px 5px;border-radius:99px}
 .cam-info{flex:1;min-width:0}
 .cam-info b{font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -57,6 +59,8 @@ input:focus,select:focus{border-color:#FF1E2D}
 .conectado{background:#0E2A1A;color:#00E676}
 .esperando{background:#2A220E;color:#FFC107}
 .btn-conectar{margin-top:10px;width:100%;background:#222;border:1px dashed #444;color:#ccc;padding:11px;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer}
+.sin-camaras{background:#1A1A22;border:1px dashed #333;border-radius:14px;padding:16px;text-align:center;font-size:12px;color:#888;line-height:1.5}
+.sin-camaras b{color:#fff;display:block;font-size:13px;margin-bottom:4px}
 
 /* ===== CENTRO ===== */
 .centro{background:#000;display:flex;flex-direction:column;position:relative;min-width:0}
@@ -66,8 +70,10 @@ input:focus,select:focus{border-color:#FF1E2D}
 .centro-top .der{margin-left:auto;display:flex;gap:8px}
 .pill{background:rgba(255,255,255,.12);backdrop-filter:blur(6px);padding:6px 10px;border-radius:99px;font-size:11px;font-weight:700}
 .video-centro{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.video-centro img{width:100%;height:100%;object-fit:cover}
-.overlay-centro{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7),transparent 40%);display:flex;flex-direction:column;justify-content:flex-end;padding:18px}
+.video-centro video{width:100%;height:100%;object-fit:cover}
+.video-centro .sin-video{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#888;font-size:13px;text-align:center;padding:20px;gap:6px}
+.video-centro .sin-video b{color:#fff;font-size:16px}
+.overlay-centro{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7),transparent 40%);display:flex;flex-direction:column;justify-content:flex-end;padding:18px;pointer-events:none}
 .overlay-centro h2{font-size:22px;font-weight:800}
 .overlay-centro p{font-size:12px;color:#ddd;margin-top:4px}
 .centro-acciones{position:absolute;bottom:18px;right:18px;display:flex;gap:8px;z-index:5}
@@ -81,10 +87,11 @@ input:focus,select:focus{border-color:#FF1E2D}
 .der-head h3{font-size:13px;font-weight:800}
 .der-head span{font-size:11px;background:#FF1E2D;color:#fff;padding:4px 8px;border-radius:99px;font-weight:800}
 .video-vivo{margin:14px;border-radius:16px;overflow:hidden;position:relative;aspect-ratio:16/10;background:#000;flex-shrink:0}
-.video-vivo img{width:100%;height:100%;object-fit:cover}
-.vivo-tag{position:absolute;top:10px;left:10px;background:#FF1E2D;color:#fff;font-size:10px;font-weight:800;padding:5px 9px;border-radius:99px;display:flex;gap:5px;align-items:center}
+.video-vivo video{width:100%;height:100%;object-fit:cover;display:block}
+.video-vivo .sin-video{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#888;font-size:12px;text-align:center;padding:14px}
+.vivo-tag{position:absolute;top:10px;left:10px;background:#FF1E2D;color:#fff;font-size:10px;font-weight:800;padding:5px 9px;border-radius:99px;display:flex;gap:5px;align-items:center;z-index:2}
 .vivo-tag i{width:7px;height:7px;background:#fff;border-radius:50%;display:block}
-.vivo-info{position:absolute;bottom:10px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:center}
+.vivo-info{position:absolute;bottom:10px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:center;z-index:2}
 .vivo-info b{font-size:12px;background:rgba(0,0,0,.6);padding:6px 10px;border-radius:99px}
 .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 14px 14px}
 .stat{background:#1A1A22;border:1px solid #2a2a35;border-radius:12px;padding:10px;text-align:center}
@@ -158,29 +165,10 @@ footer .grupo select{width:auto;min-width:130px;padding:9px 10px}
     </div>
 
     <div class="seccion">
-      <h3>Cámaras Conectadas <span id="countCamaras">(4)</span></h3>
+      <h3>Cámaras Conectadas <span id="countCamaras">(0)</span></h3>
       <p style="font-size:11px;color:#888;margin-bottom:12px">Toca una cámara para previsualizarla en el centro. Luego dale "Enviar a en vivo".</p>
       <div class="camaras-lista" id="listaCamaras">
-        <div class="cam-item selected" onclick="seleccionarCamara(this,'Cámara 1 - Tribuna','https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&q=80')">
-          <div class="cam-thumb"><img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=400&q=80"><span class="mini-live">EN VIVO</span></div>
-          <div class="cam-info"><b>Cámara 1 - Tribuna</b><span>Juan • iPhone 15 • 1080p</span></div>
-          <span class="cam-estado conectado">● Conectada</span>
-        </div>
-        <div class="cam-item" onclick="seleccionarCamara(this,'Cámara 2 - Cancha','https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&q=80')">
-          <div class="cam-thumb"><img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&q=80"></div>
-          <div class="cam-info"><b>Cámara 2 - Cancha</b><span>Pedro • Samsung • 1080p</span></div>
-          <span class="cam-estado conectado">● Conectada</span>
-        </div>
-        <div class="cam-item" onclick="seleccionarCamara(this,'Cámara 3 - Gradas','https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=800&q=80')">
-          <div class="cam-thumb"><img src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=400&q=80"></div>
-          <div class="cam-info"><b>Cámara 3 - Gradas</b><span>María • iPhone 13 • 720p</span></div>
-          <span class="cam-estado conectado">● Conectada</span>
-        </div>
-        <div class="cam-item" onclick="seleccionarCamara(this,'Cámara 4 - Portería','https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=800&q=80')">
-          <div class="cam-thumb"><img src="https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=400&q=80"></div>
-          <div class="cam-info"><b>Cámara 4 - Portería</b><span>Luis • Android • 720p</span></div>
-          <span class="cam-estado esperando">◐ Conectando</span>
-        </div>
+        <div class="sin-camaras"><b>Esperando cámaras...</b>Comparte el link de cámara y cuando se conecten van a aparecer aquí solitas.</div>
       </div>
       <button class="btn-conectar" onclick="agregarCamara()">+ Agregar otra cámara / Conectar celular</button>
     </div>
@@ -189,12 +177,13 @@ footer .grupo select{width:auto;min-width:130px;padding:9px 10px}
   <!-- ========= CENTRO - PREVIA ========= -->
   <section class="centro">
     <div class="centro-top">
-      <b id="nombreCamCentro">Cámara 1 - Tribuna</b>
+      <b id="nombreCamCentro">Sin cámara seleccionada</b>
       <span>PREVIA • No la ve el público</span>
       <div class="der"><span class="pill">1080p</span><span class="pill">● REC 00:00</span></div>
     </div>
     <div class="video-centro">
-      <img id="imgCentro" src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1200&q=80">
+      <video id="videoCentro" autoplay playsinline muted></video>
+      <div class="sin-video" id="sinVideoCentro"><b>Sin cámara</b>Conecta una cámara desde el celular para verla aquí</div>
       <div class="overlay-centro">
         <h2 id="tituloCentro">América vs Chivas - En Vivo</h2>
         <p>Vista previa • Selecciona la mejor cámara y envíala al en vivo</p>
@@ -212,9 +201,10 @@ footer .grupo select{width:auto;min-width:130px;padding:9px 10px}
   <aside class="der">
     <div class="der-head"><h3>Lo que está viendo la gente</h3><span>EN VIVO</span></div>
     <div class="video-vivo">
-      <img id="imgVivo" src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&q=80">
+      <video id="videoVivo" autoplay playsinline muted></video>
+      <div class="sin-video" id="sinVideoVivo">Aún no has enviado ninguna cámara a en vivo</div>
       <div class="vivo-tag"><i></i> EN VIVO</div>
-      <div class="vivo-info"><b id="vivoNombre">Cámara 1 - Tribuna</b><b>👁 <span id="vivoViewers">0</span></b></div>
+      <div class="vivo-info"><b id="vivoNombre">Sin cámara</b><b>👁 <span id="vivoViewers">0</span></b></div>
     </div>
     <div class="stats">
       <div class="stat"><b id="statViewers">0</b><span>Viéndolo</span></div>
@@ -244,30 +234,163 @@ footer .grupo select{width:auto;min-width:130px;padding:9px 10px}
 </footer>
 
 <script>
+// ===== CONEXION A LA BASE DE TRANSMISION CAMARAS - NO A DOLOYA-REGISTRO =====
+// PEGA AQUI TU CONFIG DE TRANSMISION CAMARAS (la misma que en camara.html)
+const firebaseConfigTransmision = {
+  apiKey: "PEGA-AQUI-TU-APIKEY-DE-TRANSMISION-CAMARAS",
+  authDomain: "transmision-camaras.firebaseapp.com",
+  databaseURL: "https://transmision-camaras-default-rtdb.firebaseio.com",
+  projectId: "transmision-camaras",
+  storageBucket: "transmision-camaras.firebasestorage.app",
+  messagingSenderId: "PEGA-AQUI-TU-SENDERID",
+  appId: "PEGA-AQUI-TU-APPID"
+};
+const appTransmision = firebase.initializeApp(firebaseConfigTransmision, "transmision-camaras");
+const db = firebase.database(appTransmision);
+
+const TRANSMISION_ID = 'activa';
 let enVivo = false;
 let segundos = 0;
 let timer = null;
 let viewers = 0;
 let likes = 0;
 
+// Guardamos los streams reales por camara: { camara1: MediaStream }
+let streamsPorCamara = {};
+let peersPorCamara = {};
+let camaraSeleccionada = null;
+let camaraEnVivo = null;
+let datosCamaras = {};
+
 function seleccionarChip(btn){
   document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
   btn.classList.add('active');
 }
-function seleccionarCamara(el, nombre, img){
-  document.querySelectorAll('.cam-item').forEach(c=>c.classList.remove('selected'));
-  el.classList.add('selected');
-  document.getElementById('nombreCamCentro').textContent = nombre;
-  document.getElementById('imgCentro').src = img;
+
+// ===== ESCUCHAR CAMARAS REALES EN TRANSMISION_CAMARAS =====
+db.ref('transmision_camaras/' + TRANSMISION_ID).on('value', (snap)=>{
+  const data = snap.val() || {};
+  datosCamaras = data;
+  const ids = Object.keys(data).filter(id => data[id] && data[id].estado === 'conectada');
+  document.getElementById('countCamaras').textContent = '(' + ids.length + ')';
+  renderListaCamaras(ids, data);
+  // Conectar WebRTC con cada cámara nueva que tenga oferta
+  ids.forEach(id => conectarConCamara(id, data[id]));
+});
+
+function renderListaCamaras(ids, data){
+  const lista = document.getElementById('listaCamaras');
+  if(ids.length === 0){
+    lista.innerHTML = '<div class="sin-camaras"><b>Esperando cámaras...</b>Comparte el link de cámara y cuando se conecten van a aparecer aquí solitas.</div>';
+    return;
+  }
+  lista.innerHTML = ids.map(id => {
+    const c = data[id];
+    const nombre = c.nombre || id;
+    const esSel = camaraSeleccionada === id ? 'selected' : '';
+    const esVivo = camaraEnVivo === id ? '<span class="mini-live">EN VIVO</span>' : '';
+    const estado = c.estado === 'conectada' ? '<span class="cam-estado conectado">● Conectada</span>' : '<span class="cam-estado esperando">◐ Conectando</span>';
+    return `
+    <div class="cam-item ${esSel}" data-camara="${id}" onclick="seleccionarCamara('${id}')">
+      <div class="cam-thumb"><video id="thumb-${id}" autoplay playsinline muted></video>${esVivo}</div>
+      <div class="cam-info"><b>${nombre}</b><span>${id} • En vivo real</span></div>
+      ${estado}
+    </div>`;
+  }).join('');
+  // Volver a poner los videos que ya teníamos en las miniaturas
+  ids.forEach(id => {
+    if(streamsPorCamara[id]){
+      const v = document.getElementById('thumb-' + id);
+      if(v) v.srcObject = streamsPorCamara[id];
+    }
+  });
 }
+
+async function conectarConCamara(id, datos){
+  if(peersPorCamara[id]) return; // Ya conectado
+  if(!datos || !datos.oferta) return;
+
+  try{
+    const peer = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+    peersPorCamara[id] = peer;
+
+    peer.ontrack = (e)=>{
+      const stream = e.streams[0];
+      streamsPorCamara[id] = stream;
+      // Miniatura
+      const thumb = document.getElementById('thumb-' + id);
+      if(thumb) thumb.srcObject = stream;
+      // Si esta es la seleccionada, ponerla en centro
+      if(camaraSeleccionada === id){
+        const vc = document.getElementById('videoCentro');
+        vc.srcObject = stream;
+        document.getElementById('sinVideoCentro').style.display = 'none';
+      }
+      // Si esta es la que está en vivo, ponerla a la derecha
+      if(camaraEnVivo === id){
+        const vv = document.getElementById('videoVivo');
+        vv.srcObject = stream;
+        document.getElementById('sinVideoVivo').style.display = 'none';
+      }
+    };
+
+    peer.onicecandidate = (e)=>{
+      if(e.candidate){
+        db.ref('transmision_camaras/' + TRANSMISION_ID + '/' + id + '/candidatos_admin').push(e.candidate.toJSON());
+      }
+    };
+
+    await peer.setRemoteDescription(new RTCSessionDescription(datos.oferta));
+    const answer = await peer.createAnswer();
+    await peer.setLocalDescription(answer);
+    await db.ref('transmision_camaras/' + TRANSMISION_ID + '/' + id + '/respuesta').set({ type: answer.type, sdp: answer.sdp });
+
+    // Escuchar candidatos que manda la cámara
+    db.ref('transmision_camaras/' + TRANSMISION_ID + '/' + id + '/candidatos_camara').on('child_added', async (snap)=>{
+      const c = snap.val();
+      if(c){
+        try{ await peer.addIceCandidate(new RTCIceCandidate(c)); }catch(e){}
+      }
+    });
+
+  }catch(e){ console.log('Error conectando con ' + id, e); }
+}
+
+function seleccionarCamara(id){
+  camaraSeleccionada = id;
+  const datos = datosCamaras[id] || {};
+  const nombre = datos.nombre || id;
+  document.querySelectorAll('.cam-item').forEach(c=>c.classList.remove('selected'));
+  const el = document.querySelector('[data-camara="' + id + '"]');
+  if(el) el.classList.add('selected');
+  document.getElementById('nombreCamCentro').textContent = nombre + ' • ' + id;
+  const stream = streamsPorCamara[id];
+  if(stream){
+    const vc = document.getElementById('videoCentro');
+    vc.srcObject = stream;
+    document.getElementById('sinVideoCentro').style.display = 'none';
+  }
+}
+
 function enviarAVivo(){
-  const nombre = document.getElementById('nombreCamCentro').textContent;
-  const img = document.getElementById('imgCentro').src;
-  document.getElementById('imgVivo').src = img;
+  if(!camaraSeleccionada){
+    alert('Primero toca una cámara de la izquierda para seleccionarla.');
+    return;
+  }
+  camaraEnVivo = camaraSeleccionada;
+  const datos = datosCamaras[camaraEnVivo] || {};
+  const nombre = datos.nombre || camaraEnVivo;
   document.getElementById('vivoNombre').textContent = nombre;
-  // Quitar EN VIVO de todas y ponerlo en la seleccionada
+
+  const stream = streamsPorCamara[camaraEnVivo];
+  if(stream){
+    const vv = document.getElementById('videoVivo');
+    vv.srcObject = stream;
+    document.getElementById('sinVideoVivo').style.display = 'none';
+  }
+  // Actualizar etiqueta EN VIVO en la lista
   document.querySelectorAll('.mini-live').forEach(m=>m.remove());
-  const sel = document.querySelector('.cam-item.selected .cam-thumb');
+  const sel = document.querySelector('[data-camara="' + camaraEnVivo + '"] .cam-thumb');
   if(sel){
     const tag = document.createElement('span');
     tag.className = 'mini-live';
@@ -277,13 +400,13 @@ function enviarAVivo(){
   if(!enVivo) iniciarVivo();
   alert('Listo bro, ya estás transmitiendo con: ' + nombre);
 }
+
 function iniciarVivo(){
   enVivo = true;
   document.getElementById('dotLive').classList.add('on');
   document.getElementById('txtLive').textContent = 'EN VIVO';
   document.getElementById('btnIniciar').style.display = 'none';
   document.getElementById('btnTerminar').style.display = 'block';
-  // Simulador de viewers para demo
   if(!timer){
     timer = setInterval(()=>{
       segundos++;
@@ -308,15 +431,11 @@ function terminarVivo(){
   alert('Transmisión terminada. Se guardó en el historial.');
 }
 function agregarCamara(){
-  const nombre = prompt('¿Nombre de la nueva cámara? Ej: Cámara 5 - Banca');
-  if(!nombre) return;
-  const lista = document.getElementById('listaCamaras');
-  const div = document.createElement('div');
-  div.className = 'cam-item';
-  div.onclick = function(){ seleccionarCamara(this, nombre, 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&q=80'); };
-  div.innerHTML = `<div class="cam-thumb"><img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=400&q=80"></div><div class="cam-info"><b>${nombre}</b><span>Nuevo • Celular • 720p</span></div><span class="cam-estado esperando">◐ Conectando</span>`;
-  lista.appendChild(div);
-  document.getElementById('countCamaras').textContent = '(' + lista.children.length + ')';
+  const idCam = prompt('¿Qué número de cámara es? Ej: camara5\n(Sin espacios, en minúsculas)');
+  if(!idCam) return;
+  const idLimpio = idCam.trim().toLowerCase().replace(/\s/g,'');
+  const link = window.location.origin + '/camara.html?transmision=' + TRANSMISION_ID + '&camara=' + idLimpio;
+  prompt('Cópiale este link por WhatsApp a la persona que va a grabar con esa cámara:', link);
 }
 function enviarChat(){
   const inp = document.getElementById('chatInput');
