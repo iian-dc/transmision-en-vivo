@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cámara - Transmisión En Vivo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif}
+body{background:#0B0B10;color:#fff;min-height:100vh;padding:16px}
+.wrap{max-width:480px;margin:0 auto}
+.top{text-align:center;margin:16px 0 14px}
+.top h1{font-size:22px;font-weight:900}
+.top p{font-size:13px;color:#aaa;margin-top:4px}
+.card{background:#15151C;border:1px solid #26262F;border-radius:20px;padding:14px;margin-bottom:12px}
+.video-box{background:#000;border-radius:16px;overflow:hidden;aspect-ratio:9/16;position:relative}
+.video-box video{width:100%;height:100%;object-fit:cover;display:block}
+.video-box .sin-cam{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#888;font-size:13px;text-align:center;padding:20px}
+.video-box .sin-cam b{color:#fff;font-size:15px}
+.badge{position:absolute;top:10px;left:10px;background:#FF1E2D;color:#fff;font-size:11px;font-weight:800;padding:6px 10px;border-radius:999px;display:none;align-items:center;gap:6px}
+.badge i{width:8px;height:8px;background:#fff;border-radius:50%;display:block}
+.badge.on{display:flex}
+.badge2{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;font-weight:700;padding:6px 10px;border-radius:999px}
+label{font-size:12px;color:#aaa;font-weight:700;display:block;margin:12px 0 6px}
+input,select{width:100%;background:#1A1A22;border:1px solid #2a2a35;color:#fff;padding:12px;border-radius:12px;font-size:14px;outline:none}
+input:focus{border-color:#FF1E2D}
+.fila{display:flex;gap:10px;margin-top:12px}
+.btn{flex:1;border:none;padding:15px;border-radius:999px;font-size:14px;font-weight:800;cursor:pointer}
+.btn-conectar{background:#FF1E2D;color:#fff}
+.btn-desconectar{background:#222;color:#FF6B76;display:none}
+.btn-cambiar{background:#222;color:#fff}
+.estado{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;padding:10px 12px;border-radius:12px;background:#1A1A22;margin-top:12px}
+.punto{width:10px;height:10px;border-radius:50%;background:#666;flex-shrink:0}
+.punto.verde{background:#00E676;box-shadow:0 0 10px #00E676}
+.punto.amarillo{background:#FFC107}
+.info{font-size:12px;color:#888;line-height:1.5;text-align:center;margin-top:10px}
+.info b{color:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1 id="tituloCam">Cámara 1</h1>
+    <p id="subCam">Transmisión en vivo • DoloYa Live</p>
+  </div>
+
+  <div class="card">
+    <div class="video-box">
+      <video id="miVideo" autoplay playsinline muted></video>
+      <div class="sin-cam" id="sinCam">
+        <b>Tu cámara va a aparecer aquí</b>
+        Escribe tu nombre y dale Conectarse
+      </div>
+      <div class="badge" id="badgeVivo"><i></i> EN VIVO</div>
+      <div class="badge2" id="badgeCalidad">720p</div>
+    </div>
+
+    <div class="estado">
+      <div class="punto" id="puntoEstado"></div>
+      <span id="txtEstado">Sin conectar</span>
+    </div>
+
+    <label>Tu nombre</label>
+    <input id="nombre" placeholder="Ej: Juan - Tribuna" value="">
+
+    <label>Cámara a usar</label>
+    <select id="selectCamara">
+      <option value="user">Frontal (selfie)</option>
+      <option value="environment">Trasera (para grabar el partido)</option>
+    </select>
+
+    <div class="fila">
+      <button class="btn btn-conectar" id="btnConectar" onclick="conectar()">Conectarse</button>
+      <button class="btn btn-desconectar" id="btnDesconectar" onclick="desconectar()">Desconectarse</button>
+    </div>
+    <button class="btn btn-cambiar" style="width:100%;margin-top:10px" onclick="cambiarCamara()">Cambiar cámara frontal / trasera</button>
+
+    <p class="info" id="infoDebug">ID: <b id="debugId">-</b><br>Cuando te conectes, el admin te va a ver en su panel en automático.</p>
+  </div>
+</div>
+
+<script>
+// ===== MISMA CONFIG DE FIREBASE QUE USAS EN DOLOYA =====
+const firebaseConfig = {
+  apiKey: "AIzaSyD462705yVQfM8McF8LxnhkR9utTlW3tkE",
+  authDomain: "doloya-registro.firebaseapp.com",
+  databaseURL: "https://doloya-registro-default-rtdb.firebaseio.com",
+  projectId: "doloya-registro",
+  storageBucket: "doloya-registro.firebasestorage.app",
+  messagingSenderId: "780335945555",
+  appId: "1:780335945555:web:d58cda187e9933292573a6",
+  measurementId: "G-YZ15ZBRNQ1"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ===== LEER PARAMETROS DEL LINK =====
+// Ej: camara.html?transmision=activa&camara=camara1
+const params = new URLSearchParams(window.location.search);
+const transmisionId = params.get('transmision') || 'activa';
+const camaraId = params.get('camara') || 'camara1';
+
+document.getElementById('tituloCam').textContent = camaraId.toUpperCase() + ' • ' + transmisionId;
+document.getElementById('debugId').textContent = 'transmision_camaras / ' + transmisionId + ' / ' + camaraId;
+
+let streamLocal = null;
+let peer = null;
+let conectado = false;
+
+const refCamara = db.ref('transmision_camaras/' + transmisionId + '/' + camaraId);
+const refOferta = db.ref('transmision_camaras/' + transmisionId + '/' + camaraId + '/oferta');
+const refRespuesta = db.ref('transmision_camaras/' + transmisionId + '/' + camaraId + '/respuesta');
+const refCandidatosAdmin = db.ref('transmision_camaras/' + transmisionId + '/' + camaraId + '/candidatos_admin');
+
+function setEstado(texto, color){
+  document.getElementById('txtEstado').textContent = texto;
+  const p = document.getElementById('puntoEstado');
+  p.className = 'punto ' + (color || '');
+}
+
+async function conectar(){
+  const nombre = document.getElementById('nombre').value.trim() || 'Cámara ' + camaraId;
+  const facing = document.getElementById('selectCamara').value;
+
+  try{
+    setEstado('Pidiendo permiso de cámara...', 'amarillo');
+
+    // 1. PEDIR CAMARA REAL DEL CELULAR
+    streamLocal = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: facing, width: {ideal: 1280}, height: {ideal: 720} },
+      audio: true
+    });
+
+    const video = document.getElementById('miVideo');
+    video.srcObject = streamLocal;
+    document.getElementById('sinCam').style.display = 'none';
+
+    // 2. AVISAR A FIREBASE QUE YA ESTOY CONECTADO
+    await refCamara.update({
+      nombre: nombre,
+      estado: 'conectada',
+      transmision: transmisionId,
+      camara: camaraId,
+      ultimaConexion: new Date().toISOString(),
+      navegador: navigator.userAgent.slice(0,80)
+    });
+
+    // 3. CREAR CONEXION WebRTC REAL
+    peer = new RTCPeerConnection({
+      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+    });
+
+    streamLocal.getTracks().forEach(track => peer.addTrack(track, streamLocal));
+
+    // Cuando yo genero candidatos, los guardo para que el admin los lea
+    peer.onicecandidate = (e)=>{
+      if(e.candidate){
+        db.ref('transmision_camaras/' + transmisionId + '/' + camaraId + '/candidatos_camara').push(e.candidate.toJSON());
+      }
+    };
+
+    // 4. CREAR OFERTA Y GUARDARLA EN FIREBASE PARA QUE EL ADMIN LA TOME
+    const offer = await peer.createOffer();
+    await peer.setLocalDescription(offer);
+    await refOferta.set({ type: offer.type, sdp: offer.sdp });
+
+    // 5. ESCUCHAR RESPUESTA DEL ADMIN
+    refRespuesta.on('value', async (snap)=>{
+      const resp = snap.val();
+      if(resp && peer && !peer.remoteDescription){
+        try{
+          await peer.setRemoteDescription(new RTCSessionDescription(resp));
+          setEstado('Conectado con el admin • Transmitiendo', 'verde');
+          document.getElementById('badgeVivo').classList.add('on');
+        }catch(e){ console.log(e); }
+      }
+    });
+
+    // 6. ESCUCHAR CANDIDATOS QUE MANDA EL ADMIN
+    refCandidatosAdmin.on('child_added', async (snap)=>{
+      const c = snap.val();
+      if(c && peer){
+        try{ await peer.addIceCandidate(new RTCIceCandidate(c)); }catch(e){}
+      }
+    });
+
+    conectado = true;
+    setEstado('Conectado • Esperando que el admin te ponga en vivo', 'verde');
+    document.getElementById('btnConectar').style.display = 'none';
+    document.getElementById('btnDesconectar').style.display = 'block';
+
+  }catch(err){
+    console.error(err);
+    alert('No pude abrir tu cámara bro. Revisa que le diste PERMITIR y que estás en HTTPS (link de Firebase). Error: ' + err.message);
+    setEstado('Error: no se pudo abrir la cámara', '');
+  }
+}
+
+async function desconectar(){
+  try{
+    if(streamLocal) streamLocal.getTracks().forEach(t=>t.stop());
+    if(peer) peer.close();
+    peer = null;
+    streamLocal = null;
+    document.getElementById('miVideo').srcObject = null;
+    document.getElementById('sinCam').style.display = 'flex';
+    document.getElementById('badgeVivo').classList.remove('on');
+    await refCamara.update({ estado: 'desconectada' });
+    await refOferta.remove();
+    await refRespuesta.remove();
+  }catch(e){}
+  conectado = false;
+  setEstado('Desconectado', '');
+  document.getElementById('btnConectar').style.display = 'block';
+  document.getElementById('btnDesconectar').style.display = 'none';
+}
+
+async function cambiarCamara(){
+  const sel = document.getElementById('selectCamara');
+  sel.value = sel.value === 'user' ? 'environment' : 'user';
+  if(conectado){
+    // Reconectar con la otra cámara
+    await desconectar();
+    await conectar();
+  } else {
+    alert('Ahora está en: ' + (sel.value === 'user' ? 'Frontal' : 'Trasera') + '. Dale Conectarse para probarla.');
+  }
+}
+
+// Si cierras la pestaña, avisar que te desconectaste
+window.addEventListener('beforeunload', ()=>{
+  refCamara.update({ estado: 'desconectada' });
+});
+</script>
+</body>
+</html>
