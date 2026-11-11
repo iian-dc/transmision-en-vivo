@@ -82,19 +82,21 @@ input:focus{border-color:#FF1E2D}
 </div>
 
 <script>
-// ===== MISMA CONFIG DE FIREBASE QUE USAS EN DOLOYA =====
-const firebaseConfig = {
-  apiKey: "AIzaSyD462705yVQfM8McF8LxnhkR9utTlW3tkE",
-  authDomain: "doloya-registro.firebaseapp.com",
-  databaseURL: "https://doloya-registro-default-rtdb.firebaseio.com",
-  projectId: "doloya-registro",
-  storageBucket: "doloya-registro.firebasestorage.app",
-  messagingSenderId: "780335945555",
-  appId: "1:780335945555:web:d58cda187e9933292573a6",
-  measurementId: "G-YZ15ZBRNQ1"
+// ===== CORREGIDO: AHORA USA LA BASE DE TRANSMISION CAMARAS, NO LA DE DOLOYA-REGISTRO =====
+// <-- PEGA AQUÍ TU CONFIG DE TRANSMISION CAMARAS -->
+// Ve a Firebase > Proyecto transmision-camaras > Configuración > Tus apps > Web y copia todo esto:
+const firebaseConfigTransmision = {
+  apiKey: "PEGA-AQUI-TU-APIKEY-DE-TRANSMISION-CAMARAS",
+  authDomain: "transmision-camaras.firebaseapp.com",
+  databaseURL: "https://transmision-camaras-default-rtdb.firebaseio.com",
+  projectId: "transmision-camaras",
+  storageBucket: "transmision-camaras.firebasestorage.app",
+  messagingSenderId: "PEGA-AQUI-TU-SENDERID",
+  appId: "PEGA-AQUI-TU-APPID"
 };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+// Se conecta como segunda app para NO mezclar con doloya-registro
+const appTransmision = firebase.initializeApp(firebaseConfigTransmision, "transmision-camaras");
+const db = firebase.database(appTransmision);
 
 // ===== LEER PARAMETROS DEL LINK =====
 // Ej: camara.html?transmision=activa&camara=camara1
@@ -137,7 +139,7 @@ async function conectar(){
     video.srcObject = streamLocal;
     document.getElementById('sinCam').style.display = 'none';
 
-    // 2. AVISAR A FIREBASE QUE YA ESTOY CONECTADO
+    // 2. AVISAR A FIREBASE QUE YA ESTOY CONECTADO - AHORA EN TRANSMISION CAMARAS
     await refCamara.update({
       nombre: nombre,
       estado: 'conectada',
