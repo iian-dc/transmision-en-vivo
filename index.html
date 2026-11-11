@@ -11,17 +11,19 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif}
 body{background:#0B0B10;color:#fff;height:100vh;overflow:hidden;display:flex;flex-direction:column}
 button,select,input{font-family:'Inter',sans-serif}
+svg{flex-shrink:0}
 
 /* ===== HEADER SUPERIOR ===== */
 header{background:#121218;border-bottom:1px solid #222;display:flex;align-items:center;gap:14px;padding:12px 18px}
-.logo{width:40px;height:40px;background:#FF1E2D;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900}
+.logo{width:40px;height:40px;background:#FF1E2D;border-radius:12px;display:flex;align-items:center;justify-content:center}
+.logo svg{width:18px;height:18px}
 header h1{font-size:17px;font-weight:800;line-height:1}
 header h1 span{font-size:11px;font-weight:500;color:#999;display:block;margin-top:2px}
 .live-badge{margin-left:auto;display:flex;align-items:center;gap:8px;background:#1A1A22;border:1px solid #2a2a35;padding:7px 12px;border-radius:999px;font-size:12px;font-weight:700}
 .dot{width:9px;height:9px;background:#666;border-radius:50%}
 .dot.on{background:#FF1E2D;box-shadow:0 0 10px #FF1E2D;animation:parpadeo 1s infinite}
 @keyframes parpadeo{50%{opacity:.4}}
-.viewers{background:#1A1A22;border:1px solid #2a2a35;padding:7px 12px;border-radius:999px;font-size:12px;font-weight:700}
+.viewers{background:#1A1A22;border:1px solid #2a2a35;padding:7px 12px;border-radius:999px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px}
 .btn-salir{background:#222;border:none;color:#fff;padding:8px 14px;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer}
 
 /* ===== LAYOUT PRINCIPAL ===== */
@@ -44,14 +46,15 @@ input:focus,select:focus{border-color:#FF1E2D}
 .btn-vivo.terminar{background:#222;color:#FF6B76;display:none}
 .btn-vivo:active{transform:scale(.98)}
 
-/* CAMARAS CONECTADAS - ABAJO IZQUIERDA */
+/* CAMARAS CONECTADAS */
 .camaras-lista{display:flex;flex-direction:column;gap:10px}
 .cam-item{background:#1A1A22;border:1px solid #2a2a35;border-radius:14px;padding:10px;display:flex;gap:10px;align-items:center;cursor:pointer;transition:.2s}
 .cam-item:hover{border-color:#444}
 .cam-item.selected{border-color:#FF1E2D;background:#231418;box-shadow:0 0 0 1px #FF1E2D}
-.cam-thumb{width:72px;height:48px;border-radius:10px;overflow:hidden;background:#000;position:relative;flex-shrink:0}
+.cam-thumb{width:72px;height:48px;border-radius:10px;overflow:hidden;background:#000;position:relative;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .cam-thumb video{width:100%;height:100%;object-fit:cover;display:block}
-.cam-thumb .mini-live{position:absolute;top:4px;left:4px;background:#FF1E2D;color:#fff;font-size:8px;font-weight:800;padding:2px 5px;border-radius:99px}
+.cam-thumb .sin-mini{color:#666;font-size:10px;text-align:center;line-height:1.2;padding:4px}
+.cam-thumb .mini-live{position:absolute;top:4px;left:4px;background:#FF1E2D;color:#fff;font-size:8px;font-weight:800;padding:2px 5px;border-radius:99px;z-index:2}
 .cam-info{flex:1;min-width:0}
 .cam-info b{font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cam-info span{font-size:11px;color:#888}
@@ -64,22 +67,25 @@ input:focus,select:focus{border-color:#FF1E2D}
 
 /* ===== CENTRO ===== */
 .centro{background:#000;display:flex;flex-direction:column;position:relative;min-width:0}
-.centro-top{padding:12px 16px;display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.6);position:absolute;top:0;left:0;right:0;z-index:5}
+.centro-top{padding:12px 16px;display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.6);position:absolute;top:0;left:0;right:0;z-index:10}
 .centro-top b{font-size:14px}
 .centro-top span{font-size:11px;color:#aaa;background:#222;padding:4px 8px;border-radius:99px}
 .centro-top .der{margin-left:auto;display:flex;gap:8px}
 .pill{background:rgba(255,255,255,.12);backdrop-filter:blur(6px);padding:6px 10px;border-radius:99px;font-size:11px;font-weight:700}
-.video-centro{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.video-centro video{width:100%;height:100%;object-fit:cover}
-.video-centro .sin-video{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#888;font-size:13px;text-align:center;padding:20px;gap:6px}
-.video-centro .sin-video b{color:#fff;font-size:16px}
-.overlay-centro{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7),transparent 40%);display:flex;flex-direction:column;justify-content:flex-end;padding:18px;pointer-events:none}
+.video-centro{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#000}
+.video-centro video{width:100%;height:100%;object-fit:cover;display:block}
+.sin-video-centro{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#888;font-size:13px;text-align:center;padding:20px;z-index:1}
+.sin-video-centro b{color:#fff;font-size:16px}
+.overlay-centro{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(to top,rgba(0,0,0,.75),transparent);display:flex;flex-direction:column;justify-content:flex-end;padding:18px;padding-bottom:78px;pointer-events:none;z-index:2}
 .overlay-centro h2{font-size:22px;font-weight:800}
 .overlay-centro p{font-size:12px;color:#ddd;margin-top:4px}
-.centro-acciones{position:absolute;bottom:18px;right:18px;display:flex;gap:8px;z-index:5}
-.btn-accion{width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,.15);backdrop-filter:blur(6px);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.btn-enviar{position:absolute;bottom:18px;left:18px;z-index:20;background:#FF1E2D;color:#fff;border:none;padding:13px 20px;border-radius:999px;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 6px 20px rgba(255,30,45,.45);display:flex;align-items:center;gap:8px}
+.btn-enviar:active{transform:scale(.97)}
+.centro-acciones{position:absolute;bottom:18px;right:18px;display:flex;gap:8px;z-index:20}
+.btn-accion{width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,.18);backdrop-filter:blur(6px);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.btn-accion svg{width:20px;height:20px}
 .btn-accion.rojo{background:#FF1E2D}
-.btn-enviar{position:absolute;bottom:18px;left:18px;z-index:5;background:#FF1E2D;color:#fff;border:none;padding:12px 18px;border-radius:999px;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 6px 20px rgba(255,30,45,.4)}
+.btn-accion.apagado{opacity:.4}
 
 /* ===== COLUMNA DERECHA - EN VIVO ===== */
 .der{background:#121218;border-left:1px solid #222;display:flex;flex-direction:column;overflow:hidden}
@@ -92,13 +98,13 @@ input:focus,select:focus{border-color:#FF1E2D}
 .vivo-tag{position:absolute;top:10px;left:10px;background:#FF1E2D;color:#fff;font-size:10px;font-weight:800;padding:5px 9px;border-radius:99px;display:flex;gap:5px;align-items:center;z-index:2}
 .vivo-tag i{width:7px;height:7px;background:#fff;border-radius:50%;display:block}
 .vivo-info{position:absolute;bottom:10px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:center;z-index:2}
-.vivo-info b{font-size:12px;background:rgba(0,0,0,.6);padding:6px 10px;border-radius:99px}
+.vivo-info b{font-size:12px;background:rgba(0,0,0,.6);padding:6px 10px;border-radius:99px;display:flex;align-items:center;gap:6px}
 .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 14px 14px}
 .stat{background:#1A1A22;border:1px solid #2a2a35;border-radius:12px;padding:10px;text-align:center}
 .stat b{font-size:15px;display:block}
 .stat span{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px}
 .chat{flex:1;display:flex;flex-direction:column;min-height:0;border-top:1px solid #222}
-.chat h4{padding:12px 14px;font-size:12px}
+.chat h4{padding:12px 14px;font-size:12px;display:flex;align-items:center;gap:8px}
 .chat-list{flex:1;overflow-y:auto;padding:0 14px 10px;display:flex;flex-direction:column;gap:10px}
 .msg{display:flex;gap:8px;font-size:12px;line-height:1.4}
 .msg b{color:#FF6B76;white-space:nowrap}
@@ -130,10 +136,10 @@ footer .grupo select{width:auto;min-width:130px;padding:9px 10px}
 <body>
 
 <header>
-  <div class="logo">▶</div>
+  <div class="logo"><svg viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></div>
   <h1>Panel Transmisión <span>Administrador • Control total del en vivo</span></h1>
   <div class="live-badge"><span class="dot" id="dotLive"></span><span id="txtLive">SIN TRANSMITIR</span></div>
-  <div class="viewers">👁 <span id="viewersTop">0</span> viendo</div>
+  <div class="viewers"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span id="viewersTop">0</span> viendo</div>
   <button class="btn-salir" onclick="alert('Saliendo del panel')">Salir</button>
 </header>
 
@@ -160,8 +166,8 @@ footer .grupo select{width:auto;min-width:130px;padding:9px 10px}
         <button class="chip" onclick="seleccionarChip(this)">Horizontal</button>
         <button class="chip" onclick="seleccionarChip(this)">Pantalla completa</button>
       </div>
-      <button class="btn-vivo iniciar" id="btnIniciar" onclick="iniciarVivo()">● INICIAR EN VIVO</button>
-      <button class="btn-vivo terminar" id="btnTerminar" onclick="terminarVivo()">■ TERMINAR EN VIVO</button>
+      <button class="btn-vivo iniciar" id="btnIniciar" onclick="iniciarVivo()">INICIAR EN VIVO</button>
+      <button class="btn-vivo terminar" id="btnTerminar" onclick="terminarVivo()">TERMINAR EN VIVO</button>
     </div>
 
     <div class="seccion">
@@ -179,20 +185,23 @@ footer .grupo select{width:auto;min-width:130px;padding:9px 10px}
     <div class="centro-top">
       <b id="nombreCamCentro">Sin cámara seleccionada</b>
       <span>PREVIA • No la ve el público</span>
-      <div class="der"><span class="pill">1080p</span><span class="pill">● REC 00:00</span></div>
+      <div class="der"><span class="pill" id="pillResolucion">1080p</span><span class="pill" id="pillRec">REC 00:00</span></div>
     </div>
     <div class="video-centro">
       <video id="videoCentro" autoplay playsinline muted></video>
-      <div class="sin-video" id="sinVideoCentro"><b>Sin cámara</b>Conecta una cámara desde el celular para verla aquí</div>
+      <div class="sin-video-centro" id="sinVideoCentro">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.5"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        <b>Sin cámara</b>Conecta una cámara desde el celular para verla aquí
+      </div>
       <div class="overlay-centro">
         <h2 id="tituloCentro">América vs Chivas - En Vivo</h2>
         <p>Vista previa • Selecciona la mejor cámara y envíala al en vivo</p>
       </div>
-      <button class="btn-enviar" onclick="enviarAVivo()">↗ ENVIAR A EN VIVO</button>
+      <button class="btn-enviar" onclick="enviarAVivo()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg> ENVIAR A EN VIVO</button>
       <div class="centro-acciones">
-        <button class="btn-accion" title="Micrófono" onclick="toggleBtn(this)">🎤</button>
-        <button class="btn-accion" title="Cámara" onclick="toggleBtn(this)">📷</button>
-        <button class="btn-accion rojo" title="Cambiar cámara">⇄</button>
+        <button class="btn-accion" id="btnMicCentro" title="Micrófono" onclick="toggleBtn(this)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4"/></svg></button>
+        <button class="btn-accion" id="btnCamCentro" title="Cámara" onclick="toggleBtn(this)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></button>
+        <button class="btn-accion rojo" title="Cambiar cámara" onclick="cambiarCamaraCentro()"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg></button>
       </div>
     </div>
   </section>
@@ -204,7 +213,7 @@ footer .grupo select{width:auto;min-width:130px;padding:9px 10px}
       <video id="videoVivo" autoplay playsinline muted></video>
       <div class="sin-video" id="sinVideoVivo">Aún no has enviado ninguna cámara a en vivo</div>
       <div class="vivo-tag"><i></i> EN VIVO</div>
-      <div class="vivo-info"><b id="vivoNombre">Sin cámara</b><b>👁 <span id="vivoViewers">0</span></b></div>
+      <div class="vivo-info"><b id="vivoNombre">Sin cámara</b><b><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span id="vivoViewers">0</span></b></div>
     </div>
     <div class="stats">
       <div class="stat"><b id="statViewers">0</b><span>Viéndolo</span></div>
@@ -212,10 +221,10 @@ footer .grupo select{width:auto;min-width:130px;padding:9px 10px}
       <div class="stat"><b id="statTiempo">00:00</b><span>Tiempo</span></div>
     </div>
     <div class="chat">
-      <h4>💬 Chat en vivo</h4>
+      <h4><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FF6B76" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Chat en vivo</h4>
       <div class="chat-list" id="chatList">
         <div class="msg"><b>Carlos:</b><span>¡Gooool! ¡Qué partidazo!</span></div>
-        <div class="msg"><b>Ana:</b><span>Se ve súper bien desde tribuna 🔥</span></div>
+        <div class="msg"><b>Ana:</b><span>Se ve súper bien desde tribuna</span></div>
         <div class="msg"><b>Luis:</b><span>¿Cuánto van?</span></div>
       </div>
       <div class="chat-input"><input id="chatInput" placeholder="Escribe como admin..."><button onclick="enviarChat()">Enviar</button></div>
@@ -223,18 +232,18 @@ footer .grupo select{width:auto;min-width:130px;padding:9px 10px}
   </aside>
 </main>
 
-<!-- ========= BARRA INFERIOR ========= -->
+<!-- ========= BARRA INFERIOR - DETALLES DE SONIDO Y CALIDAD ========= -->
 <footer>
   <div class="grupo"><label>Resolución:</label><select id="resolucion" onchange="cambiarResolucion()"><option>1080p Full HD</option><option>720p HD</option><option>480p</option><option>360p - Ahorro datos</option></select></div>
   <div class="grupo"><label>Calidad:</label><select><option>Automática</option><option>Alta</option><option>Media</option><option>Baja</option></select></div>
-  <div class="grupo"><label>Audio:</label><select><option>Estéreo</option><option>Mono</option><option>Solo ambiente</option></select></div>
-  <div class="grupo"><label>Micrófono</label><div class="switch on" onclick="this.classList.toggle('on')"></div></div>
-  <div class="grupo"><label>Sonido estadio</label><div class="switch on" onclick="this.classList.toggle('on')"></div></div>
-  <div class="indicador"><span>Bitrate: <b>4500 kbps</b></span><span>Internet: <b class="verde">● Excelente</b></span><span>Batería cámara: <b>86%</b></span></div>
+  <div class="grupo"><label>Audio:</label><select id="selectAudio" onchange="cambiarAudio()"><option>Estéreo</option><option>Mono</option><option>Solo ambiente</option></select></div>
+  <div class="grupo"><label>Micrófono</label><div class="switch on" id="switchMic" onclick="toggleSwitch(this,'mic')"></div></div>
+  <div class="grupo"><label>Sonido estadio</label><div class="switch on" id="switchEstadio" onclick="toggleSwitch(this,'estadio')"></div></div>
+  <div class="indicador"><span>Bitrate: <b>4500 kbps</b></span><span>Internet: <b class="verde">Excelente</b></span><span>Batería cámara: <b>86%</b></span></div>
 </footer>
 
 <script>
-// ===== CONEXION A LA BASE DE TRANSMISION CAMARAS - NO A DOLOYA-REGISTRO =====
+// ===== ESTE ARCHIVO ES DEL PROYECTO TRANSMISION CAMARAS - NO DE DOLOYA REGISTRO =====
 // PEGA AQUI TU CONFIG DE TRANSMISION CAMARAS (la misma que en camara.html)
 const firebaseConfigTransmision = {
   apiKey: "PEGA-AQUI-TU-APIKEY-DE-TRANSMISION-CAMARAS",
@@ -254,13 +263,12 @@ let segundos = 0;
 let timer = null;
 let viewers = 0;
 let likes = 0;
-
-// Guardamos los streams reales por camara: { camara1: MediaStream }
 let streamsPorCamara = {};
 let peersPorCamara = {};
 let camaraSeleccionada = null;
 let camaraEnVivo = null;
 let datosCamaras = {};
+let micActivo = true;
 
 function seleccionarChip(btn){
   document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
@@ -274,7 +282,6 @@ db.ref('transmision_camaras/' + TRANSMISION_ID).on('value', (snap)=>{
   const ids = Object.keys(data).filter(id => data[id] && data[id].estado === 'conectada');
   document.getElementById('countCamaras').textContent = '(' + ids.length + ')';
   renderListaCamaras(ids, data);
-  // Conectar WebRTC con cada cámara nueva que tenga oferta
   ids.forEach(id => conectarConCamara(id, data[id]));
 });
 
@@ -289,70 +296,61 @@ function renderListaCamaras(ids, data){
     const nombre = c.nombre || id;
     const esSel = camaraSeleccionada === id ? 'selected' : '';
     const esVivo = camaraEnVivo === id ? '<span class="mini-live">EN VIVO</span>' : '';
-    const estado = c.estado === 'conectada' ? '<span class="cam-estado conectado">● Conectada</span>' : '<span class="cam-estado esperando">◐ Conectando</span>';
+    const estado = c.estado === 'conectada' ? '<span class="cam-estado conectado">Conectada</span>' : '<span class="cam-estado esperando">Conectando</span>';
     return `
     <div class="cam-item ${esSel}" data-camara="${id}" onclick="seleccionarCamara('${id}')">
-      <div class="cam-thumb"><video id="thumb-${id}" autoplay playsinline muted></video>${esVivo}</div>
+      <div class="cam-thumb"><video id="thumb-${id}" autoplay playsinline muted></video><div class="sin-mini" id="sin-mini-${id}">Esperando video...</div>${esVivo}</div>
       <div class="cam-info"><b>${nombre}</b><span>${id} • En vivo real</span></div>
       ${estado}
     </div>`;
   }).join('');
-  // Volver a poner los videos que ya teníamos en las miniaturas
   ids.forEach(id => {
     if(streamsPorCamara[id]){
       const v = document.getElementById('thumb-' + id);
+      const s = document.getElementById('sin-mini-' + id);
       if(v) v.srcObject = streamsPorCamara[id];
+      if(s) s.style.display = 'none';
     }
   });
 }
 
 async function conectarConCamara(id, datos){
-  if(peersPorCamara[id]) return; // Ya conectado
+  if(peersPorCamara[id]) return;
   if(!datos || !datos.oferta) return;
-
   try{
     const peer = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
     peersPorCamara[id] = peer;
-
     peer.ontrack = (e)=>{
       const stream = e.streams[0];
       streamsPorCamara[id] = stream;
-      // Miniatura
       const thumb = document.getElementById('thumb-' + id);
+      const sinMini = document.getElementById('sin-mini-' + id);
       if(thumb) thumb.srcObject = stream;
-      // Si esta es la seleccionada, ponerla en centro
+      if(sinMini) sinMini.style.display = 'none';
       if(camaraSeleccionada === id){
         const vc = document.getElementById('videoCentro');
         vc.srcObject = stream;
         document.getElementById('sinVideoCentro').style.display = 'none';
       }
-      // Si esta es la que está en vivo, ponerla a la derecha
       if(camaraEnVivo === id){
         const vv = document.getElementById('videoVivo');
         vv.srcObject = stream;
         document.getElementById('sinVideoVivo').style.display = 'none';
       }
     };
-
     peer.onicecandidate = (e)=>{
       if(e.candidate){
         db.ref('transmision_camaras/' + TRANSMISION_ID + '/' + id + '/candidatos_admin').push(e.candidate.toJSON());
       }
     };
-
     await peer.setRemoteDescription(new RTCSessionDescription(datos.oferta));
     const answer = await peer.createAnswer();
     await peer.setLocalDescription(answer);
     await db.ref('transmision_camaras/' + TRANSMISION_ID + '/' + id + '/respuesta').set({ type: answer.type, sdp: answer.sdp });
-
-    // Escuchar candidatos que manda la cámara
     db.ref('transmision_camaras/' + TRANSMISION_ID + '/' + id + '/candidatos_camara').on('child_added', async (snap)=>{
       const c = snap.val();
-      if(c){
-        try{ await peer.addIceCandidate(new RTCIceCandidate(c)); }catch(e){}
-      }
+      if(c){ try{ await peer.addIceCandidate(new RTCIceCandidate(c)); }catch(e){} }
     });
-
   }catch(e){ console.log('Error conectando con ' + id, e); }
 }
 
@@ -368,8 +366,18 @@ function seleccionarCamara(id){
   if(stream){
     const vc = document.getElementById('videoCentro');
     vc.srcObject = stream;
+    vc.muted = !micActivo;
     document.getElementById('sinVideoCentro').style.display = 'none';
   }
+}
+
+function cambiarCamaraCentro(){
+  // Pasa a la siguiente cámara conectada, como antes con el botón de cambiar
+  const ids = Object.keys(datosCamaras).filter(id => datosCamaras[id] && datosCamaras[id].estado === 'conectada');
+  if(ids.length === 0) return;
+  const idx = ids.indexOf(camaraSeleccionada);
+  const siguiente = ids[(idx + 1) % ids.length];
+  seleccionarCamara(siguiente);
 }
 
 function enviarAVivo(){
@@ -381,14 +389,12 @@ function enviarAVivo(){
   const datos = datosCamaras[camaraEnVivo] || {};
   const nombre = datos.nombre || camaraEnVivo;
   document.getElementById('vivoNombre').textContent = nombre;
-
   const stream = streamsPorCamara[camaraEnVivo];
   if(stream){
     const vv = document.getElementById('videoVivo');
     vv.srcObject = stream;
     document.getElementById('sinVideoVivo').style.display = 'none';
   }
-  // Actualizar etiqueta EN VIVO en la lista
   document.querySelectorAll('.mini-live').forEach(m=>m.remove());
   const sel = document.querySelector('[data-camara="' + camaraEnVivo + '"] .cam-thumb');
   if(sel){
@@ -413,6 +419,7 @@ function iniciarVivo(){
       const m = String(Math.floor(segundos/60)).padStart(2,'0');
       const s = String(segundos%60).padStart(2,'0');
       document.getElementById('statTiempo').textContent = m+':'+s;
+      document.getElementById('pillRec').textContent = 'REC ' + m + ':' + s;
       if(segundos%3===0){ viewers += Math.floor(Math.random()*5); likes += Math.floor(Math.random()*8); }
       document.getElementById('viewersTop').textContent = viewers;
       document.getElementById('vivoViewers').textContent = viewers;
@@ -431,7 +438,7 @@ function terminarVivo(){
   alert('Transmisión terminada. Se guardó en el historial.');
 }
 function agregarCamara(){
-  const idCam = prompt('¿Qué número de cámara es? Ej: camara5\n(Sin espacios, en minúsculas)');
+  const idCam = prompt('¿Qué número de cámara es? Ej: camara5');
   if(!idCam) return;
   const idLimpio = idCam.trim().toLowerCase().replace(/\s/g,'');
   const link = window.location.origin + '/camara.html?transmision=' + TRANSMISION_ID + '&camara=' + idLimpio;
@@ -453,9 +460,25 @@ document.getElementById('titulo').addEventListener('input', e=>{
 });
 function cambiarResolucion(){
   const r = document.getElementById('resolucion').value;
-  document.querySelector('.centro-top .pill').textContent = r.split(' ')[0];
+  document.getElementById('pillResolucion').textContent = r.split(' ')[0];
 }
-function toggleBtn(btn){ btn.style.opacity = btn.style.opacity==='0.4' ? '1' : '0.4'; }
+function cambiarAudio(){
+  const a = document.getElementById('selectAudio').value;
+  const vc = document.getElementById('videoCentro');
+  const vv = document.getElementById('videoVivo');
+  if(a === 'Solo ambiente'){ vc.muted = false; vv.muted = false; }
+  else if(a === 'Mono' || a === 'Estéreo'){ vc.muted = !micActivo; vv.muted = !micActivo; }
+}
+function toggleSwitch(el, tipo){
+  el.classList.toggle('on');
+  if(tipo === 'mic'){
+    micActivo = el.classList.contains('on');
+    document.getElementById('btnMicCentro').classList.toggle('apagado', !micActivo);
+    const vc = document.getElementById('videoCentro');
+    vc.muted = !micActivo;
+  }
+}
+function toggleBtn(btn){ btn.classList.toggle('apagado'); }
 </script>
 </body>
 </html>
