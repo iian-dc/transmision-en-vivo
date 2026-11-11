@@ -1,1 +1,0 @@
-# transmisi-n-en-vivo

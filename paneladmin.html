@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Administrador - Transmisión En Vivo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif}
+body{background:#0B0B10;color:#fff;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+button,select,input{font-family:'Inter',sans-serif}
+
+/* ===== HEADER SUPERIOR ===== */
+header{background:#121218;border-bottom:1px solid #222;display:flex;align-items:center;gap:14px;padding:12px 18px}
+.logo{width:40px;height:40px;background:#FF1E2D;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900}
+header h1{font-size:17px;font-weight:800;line-height:1}
+header h1 span{font-size:11px;font-weight:500;color:#999;display:block;margin-top:2px}
+.live-badge{margin-left:auto;display:flex;align-items:center;gap:8px;background:#1A1A22;border:1px solid #2a2a35;padding:7px 12px;border-radius:999px;font-size:12px;font-weight:700}
+.dot{width:9px;height:9px;background:#666;border-radius:50%}
+.dot.on{background:#FF1E2D;box-shadow:0 0 10px #FF1E2D;animation:parpadeo 1s infinite}
+@keyframes parpadeo{50%{opacity:.4}}
+.viewers{background:#1A1A22;border:1px solid #2a2a35;padding:7px 12px;border-radius:999px;font-size:12px;font-weight:700}
+.btn-salir{background:#222;border:none;color:#fff;padding:8px 14px;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer}
+
+/* ===== LAYOUT PRINCIPAL ===== */
+main{flex:1;display:grid;grid-template-columns:300px 1fr 340px;gap:0;min-height:0}
+
+/* ===== COLUMNA IZQUIERDA ===== */
+.izq{background:#121218;border-right:1px solid #222;display:flex;flex-direction:column;overflow-y:auto}
+.seccion{padding:16px;border-bottom:1px solid #222}
+.seccion h3{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#888;margin-bottom:12px;font-weight:800}
+.seccion h3 span{color:#FF1E2D}
+label{font-size:12px;color:#aaa;font-weight:600;display:block;margin:10px 0 5px}
+input,select{width:100%;background:#1A1A22;border:1px solid #2a2a35;color:#fff;padding:11px 12px;border-radius:12px;font-size:13px;outline:none}
+input:focus,select:focus{border-color:#FF1E2D}
+.fila2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.chip{background:#1A1A22;border:1px solid #2a2a35;color:#ccc;padding:7px 12px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer}
+.chip.active{background:#FF1E2D;border-color:#FF1E2D;color:#fff}
+.btn-vivo{width:100%;border:none;padding:14px;border-radius:14px;font-size:14px;font-weight:800;cursor:pointer;margin-top:14px}
+.btn-vivo.iniciar{background:#FF1E2D;color:#fff;box-shadow:0 6px 20px rgba(255,30,45,.35)}
+.btn-vivo.terminar{background:#222;color:#FF6B76;display:none}
+.btn-vivo:active{transform:scale(.98)}
+
+/* CAMARAS CONECTADAS - ABAJO IZQUIERDA */
+.camaras-lista{display:flex;flex-direction:column;gap:10px}
+.cam-item{background:#1A1A22;border:1px solid #2a2a35;border-radius:14px;padding:10px;display:flex;gap:10px;align-items:center;cursor:pointer;transition:.2s}
+.cam-item:hover{border-color:#444}
+.cam-item.selected{border-color:#FF1E2D;background:#231418;box-shadow:0 0 0 1px #FF1E2D}
+.cam-thumb{width:72px;height:48px;border-radius:10px;overflow:hidden;background:#000;position:relative;flex-shrink:0}
+.cam-thumb img{width:100%;height:100%;object-fit:cover}
+.cam-thumb .mini-live{position:absolute;top:4px;left:4px;background:#FF1E2D;color:#fff;font-size:8px;font-weight:800;padding:2px 5px;border-radius:99px}
+.cam-info{flex:1;min-width:0}
+.cam-info b{font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cam-info span{font-size:11px;color:#888}
+.cam-estado{font-size:10px;font-weight:800;padding:4px 7px;border-radius:99px;white-space:nowrap}
+.conectado{background:#0E2A1A;color:#00E676}
+.esperando{background:#2A220E;color:#FFC107}
+.btn-conectar{margin-top:10px;width:100%;background:#222;border:1px dashed #444;color:#ccc;padding:11px;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer}
+
+/* ===== CENTRO ===== */
+.centro{background:#000;display:flex;flex-direction:column;position:relative;min-width:0}
+.centro-top{padding:12px 16px;display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.6);position:absolute;top:0;left:0;right:0;z-index:5}
+.centro-top b{font-size:14px}
+.centro-top span{font-size:11px;color:#aaa;background:#222;padding:4px 8px;border-radius:99px}
+.centro-top .der{margin-left:auto;display:flex;gap:8px}
+.pill{background:rgba(255,255,255,.12);backdrop-filter:blur(6px);padding:6px 10px;border-radius:99px;font-size:11px;font-weight:700}
+.video-centro{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.video-centro img{width:100%;height:100%;object-fit:cover}
+.overlay-centro{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7),transparent 40%);display:flex;flex-direction:column;justify-content:flex-end;padding:18px}
+.overlay-centro h2{font-size:22px;font-weight:800}
+.overlay-centro p{font-size:12px;color:#ddd;margin-top:4px}
+.centro-acciones{position:absolute;bottom:18px;right:18px;display:flex;gap:8px;z-index:5}
+.btn-accion{width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,.15);backdrop-filter:blur(6px);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.btn-accion.rojo{background:#FF1E2D}
+.btn-enviar{position:absolute;bottom:18px;left:18px;z-index:5;background:#FF1E2D;color:#fff;border:none;padding:12px 18px;border-radius:999px;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 6px 20px rgba(255,30,45,.4)}
+
+/* ===== COLUMNA DERECHA - EN VIVO ===== */
+.der{background:#121218;border-left:1px solid #222;display:flex;flex-direction:column;overflow:hidden}
+.der-head{padding:16px 16px 12px;border-bottom:1px solid #222;display:flex;align-items:center;gap:8px}
+.der-head h3{font-size:13px;font-weight:800}
+.der-head span{font-size:11px;background:#FF1E2D;color:#fff;padding:4px 8px;border-radius:99px;font-weight:800}
+.video-vivo{margin:14px;border-radius:16px;overflow:hidden;position:relative;aspect-ratio:16/10;background:#000;flex-shrink:0}
+.video-vivo img{width:100%;height:100%;object-fit:cover}
+.vivo-tag{position:absolute;top:10px;left:10px;background:#FF1E2D;color:#fff;font-size:10px;font-weight:800;padding:5px 9px;border-radius:99px;display:flex;gap:5px;align-items:center}
+.vivo-tag i{width:7px;height:7px;background:#fff;border-radius:50%;display:block}
+.vivo-info{position:absolute;bottom:10px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:center}
+.vivo-info b{font-size:12px;background:rgba(0,0,0,.6);padding:6px 10px;border-radius:99px}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 14px 14px}
+.stat{background:#1A1A22;border:1px solid #2a2a35;border-radius:12px;padding:10px;text-align:center}
+.stat b{font-size:15px;display:block}
+.stat span{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px}
+.chat{flex:1;display:flex;flex-direction:column;min-height:0;border-top:1px solid #222}
+.chat h4{padding:12px 14px;font-size:12px}
+.chat-list{flex:1;overflow-y:auto;padding:0 14px 10px;display:flex;flex-direction:column;gap:10px}
+.msg{display:flex;gap:8px;font-size:12px;line-height:1.4}
+.msg b{color:#FF6B76;white-space:nowrap}
+.msg span{color:#ddd}
+.chat-input{padding:12px;border-top:1px solid #222;display:flex;gap:8px}
+.chat-input input{flex:1}
+.chat-input button{background:#FF1E2D;color:#fff;border:none;padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer}
+
+/* ===== BARRA INFERIOR ===== */
+footer{background:#121218;border-top:1px solid #222;padding:12px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+footer label{margin:0;font-size:11px}
+footer .grupo{display:flex;align-items:center;gap:8px}
+footer .grupo select{width:auto;min-width:130px;padding:9px 10px}
+.switch{width:44px;height:24px;background:#333;border-radius:99px;position:relative;cursor:pointer;flex-shrink:0}
+.switch:after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s}
+.switch.on{background:#00E676}
+.switch.on:after{left:23px}
+.indicador{margin-left:auto;display:flex;gap:16px;font-size:11px;color:#aaa;font-weight:600}
+.indicador b{color:#fff}
+.indicador .verde{color:#00E676}
+
+@media(max-width:1100px){
+  body{height:auto;overflow:auto}
+  main{grid-template-columns:1fr}
+  .centro{min-height:420px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">▶</div>
+  <h1>Panel Transmisión <span>Administrador • Control total del en vivo</span></h1>
+  <div class="live-badge"><span class="dot" id="dotLive"></span><span id="txtLive">SIN TRANSMITIR</span></div>
+  <div class="viewers">👁 <span id="viewersTop">0</span> viendo</div>
+  <button class="btn-salir" onclick="alert('Saliendo del panel')">Salir</button>
+</header>
+
+<main>
+  <!-- ========= IZQUIERDA ========= -->
+  <aside class="izq">
+    <div class="seccion">
+      <h3><span>●</span> Opciones de Transmisión</h3>
+      <label>Título del partido</label>
+      <input id="titulo" value="América vs Chivas - En Vivo" placeholder="Ej: América vs Chivas">
+      <div class="fila2">
+        <div><label>Tema / Deporte</label>
+          <select id="tema">
+            <option>Fútbol</option><option>Básquetbol</option><option>Béisbol</option><option>Voleibol</option><option>Box</option><option>Otro</option>
+          </select>
+        </div>
+        <div><label>Visibilidad</label>
+          <select><option>Público</option><option>Privado</option><option>Solo suscriptores</option></select>
+        </div>
+      </div>
+      <label>¿Cómo se va a ver?</label>
+      <div class="chip-row">
+        <button class="chip active" onclick="seleccionarChip(this)">Vertical</button>
+        <button class="chip" onclick="seleccionarChip(this)">Horizontal</button>
+        <button class="chip" onclick="seleccionarChip(this)">Pantalla completa</button>
+      </div>
+      <button class="btn-vivo iniciar" id="btnIniciar" onclick="iniciarVivo()">● INICIAR EN VIVO</button>
+      <button class="btn-vivo terminar" id="btnTerminar" onclick="terminarVivo()">■ TERMINAR EN VIVO</button>
+    </div>
+
+    <div class="seccion">
+      <h3>Cámaras Conectadas <span id="countCamaras">(4)</span></h3>
+      <p style="font-size:11px;color:#888;margin-bottom:12px">Toca una cámara para previsualizarla en el centro. Luego dale "Enviar a en vivo".</p>
+      <div class="camaras-lista" id="listaCamaras">
+        <div class="cam-item selected" onclick="seleccionarCamara(this,'Cámara 1 - Tribuna','https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&q=80')">
+          <div class="cam-thumb"><img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=400&q=80"><span class="mini-live">EN VIVO</span></div>
+          <div class="cam-info"><b>Cámara 1 - Tribuna</b><span>Juan • iPhone 15 • 1080p</span></div>
+          <span class="cam-estado conectado">● Conectada</span>
+        </div>
+        <div class="cam-item" onclick="seleccionarCamara(this,'Cámara 2 - Cancha','https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&q=80')">
+          <div class="cam-thumb"><img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&q=80"></div>
+          <div class="cam-info"><b>Cámara 2 - Cancha</b><span>Pedro • Samsung • 1080p</span></div>
+          <span class="cam-estado conectado">● Conectada</span>
+        </div>
+        <div class="cam-item" onclick="seleccionarCamara(this,'Cámara 3 - Gradas','https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=800&q=80')">
+          <div class="cam-thumb"><img src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=400&q=80"></div>
+          <div class="cam-info"><b>Cámara 3 - Gradas</b><span>María • iPhone 13 • 720p</span></div>
+          <span class="cam-estado conectado">● Conectada</span>
+        </div>
+        <div class="cam-item" onclick="seleccionarCamara(this,'Cámara 4 - Portería','https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=800&q=80')">
+          <div class="cam-thumb"><img src="https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=400&q=80"></div>
+          <div class="cam-info"><b>Cámara 4 - Portería</b><span>Luis • Android • 720p</span></div>
+          <span class="cam-estado esperando">◐ Conectando</span>
+        </div>
+      </div>
+      <button class="btn-conectar" onclick="agregarCamara()">+ Agregar otra cámara / Conectar celular</button>
+    </div>
+  </aside>
+
+  <!-- ========= CENTRO - PREVIA ========= -->
+  <section class="centro">
+    <div class="centro-top">
+      <b id="nombreCamCentro">Cámara 1 - Tribuna</b>
+      <span>PREVIA • No la ve el público</span>
+      <div class="der"><span class="pill">1080p</span><span class="pill">● REC 00:00</span></div>
+    </div>
+    <div class="video-centro">
+      <img id="imgCentro" src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1200&q=80">
+      <div class="overlay-centro">
+        <h2 id="tituloCentro">América vs Chivas - En Vivo</h2>
+        <p>Vista previa • Selecciona la mejor cámara y envíala al en vivo</p>
+      </div>
+      <button class="btn-enviar" onclick="enviarAVivo()">↗ ENVIAR A EN VIVO</button>
+      <div class="centro-acciones">
+        <button class="btn-accion" title="Micrófono" onclick="toggleBtn(this)">🎤</button>
+        <button class="btn-accion" title="Cámara" onclick="toggleBtn(this)">📷</button>
+        <button class="btn-accion rojo" title="Cambiar cámara">⇄</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========= DERECHA - EN VIVO ========= -->
+  <aside class="der">
+    <div class="der-head"><h3>Lo que está viendo la gente</h3><span>EN VIVO</span></div>
+    <div class="video-vivo">
+      <img id="imgVivo" src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&q=80">
+      <div class="vivo-tag"><i></i> EN VIVO</div>
+      <div class="vivo-info"><b id="vivoNombre">Cámara 1 - Tribuna</b><b>👁 <span id="vivoViewers">0</span></b></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="statViewers">0</b><span>Viéndolo</span></div>
+      <div class="stat"><b id="statLikes">0</b><span>Likes</span></div>
+      <div class="stat"><b id="statTiempo">00:00</b><span>Tiempo</span></div>
+    </div>
+    <div class="chat">
+      <h4>💬 Chat en vivo</h4>
+      <div class="chat-list" id="chatList">
+        <div class="msg"><b>Carlos:</b><span>¡Gooool! ¡Qué partidazo!</span></div>
+        <div class="msg"><b>Ana:</b><span>Se ve súper bien desde tribuna 🔥</span></div>
+        <div class="msg"><b>Luis:</b><span>¿Cuánto van?</span></div>
+      </div>
+      <div class="chat-input"><input id="chatInput" placeholder="Escribe como admin..."><button onclick="enviarChat()">Enviar</button></div>
+    </div>
+  </aside>
+</main>
+
+<!-- ========= BARRA INFERIOR ========= -->
+<footer>
+  <div class="grupo"><label>Resolución:</label><select id="resolucion" onchange="cambiarResolucion()"><option>1080p Full HD</option><option>720p HD</option><option>480p</option><option>360p - Ahorro datos</option></select></div>
+  <div class="grupo"><label>Calidad:</label><select><option>Automática</option><option>Alta</option><option>Media</option><option>Baja</option></select></div>
+  <div class="grupo"><label>Audio:</label><select><option>Estéreo</option><option>Mono</option><option>Solo ambiente</option></select></div>
+  <div class="grupo"><label>Micrófono</label><div class="switch on" onclick="this.classList.toggle('on')"></div></div>
+  <div class="grupo"><label>Sonido estadio</label><div class="switch on" onclick="this.classList.toggle('on')"></div></div>
+  <div class="indicador"><span>Bitrate: <b>4500 kbps</b></span><span>Internet: <b class="verde">● Excelente</b></span><span>Batería cámara: <b>86%</b></span></div>
+</footer>
+
+<script>
+let enVivo = false;
+let segundos = 0;
+let timer = null;
+let viewers = 0;
+let likes = 0;
+
+function seleccionarChip(btn){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+}
+function seleccionarCamara(el, nombre, img){
+  document.querySelectorAll('.cam-item').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('nombreCamCentro').textContent = nombre;
+  document.getElementById('imgCentro').src = img;
+}
+function enviarAVivo(){
+  const nombre = document.getElementById('nombreCamCentro').textContent;
+  const img = document.getElementById('imgCentro').src;
+  document.getElementById('imgVivo').src = img;
+  document.getElementById('vivoNombre').textContent = nombre;
+  // Quitar EN VIVO de todas y ponerlo en la seleccionada
+  document.querySelectorAll('.mini-live').forEach(m=>m.remove());
+  const sel = document.querySelector('.cam-item.selected .cam-thumb');
+  if(sel){
+    const tag = document.createElement('span');
+    tag.className = 'mini-live';
+    tag.textContent = 'EN VIVO';
+    sel.appendChild(tag);
+  }
+  if(!enVivo) iniciarVivo();
+  alert('Listo bro, ya estás transmitiendo con: ' + nombre);
+}
+function iniciarVivo(){
+  enVivo = true;
+  document.getElementById('dotLive').classList.add('on');
+  document.getElementById('txtLive').textContent = 'EN VIVO';
+  document.getElementById('btnIniciar').style.display = 'none';
+  document.getElementById('btnTerminar').style.display = 'block';
+  // Simulador de viewers para demo
+  if(!timer){
+    timer = setInterval(()=>{
+      segundos++;
+      const m = String(Math.floor(segundos/60)).padStart(2,'0');
+      const s = String(segundos%60).padStart(2,'0');
+      document.getElementById('statTiempo').textContent = m+':'+s;
+      if(segundos%3===0){ viewers += Math.floor(Math.random()*5); likes += Math.floor(Math.random()*8); }
+      document.getElementById('viewersTop').textContent = viewers;
+      document.getElementById('vivoViewers').textContent = viewers;
+      document.getElementById('statViewers').textContent = viewers;
+      document.getElementById('statLikes').textContent = likes;
+    },1000);
+  }
+}
+function terminarVivo(){
+  enVivo = false;
+  clearInterval(timer); timer = null; segundos = 0;
+  document.getElementById('dotLive').classList.remove('on');
+  document.getElementById('txtLive').textContent = 'SIN TRANSMITIR';
+  document.getElementById('btnIniciar').style.display = 'block';
+  document.getElementById('btnTerminar').style.display = 'none';
+  alert('Transmisión terminada. Se guardó en el historial.');
+}
+function agregarCamara(){
+  const nombre = prompt('¿Nombre de la nueva cámara? Ej: Cámara 5 - Banca');
+  if(!nombre) return;
+  const lista = document.getElementById('listaCamaras');
+  const div = document.createElement('div');
+  div.className = 'cam-item';
+  div.onclick = function(){ seleccionarCamara(this, nombre, 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&q=80'); };
+  div.innerHTML = `<div class="cam-thumb"><img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=400&q=80"></div><div class="cam-info"><b>${nombre}</b><span>Nuevo • Celular • 720p</span></div><span class="cam-estado esperando">◐ Conectando</span>`;
+  lista.appendChild(div);
+  document.getElementById('countCamaras').textContent = '(' + lista.children.length + ')';
+}
+function enviarChat(){
+  const inp = document.getElementById('chatInput');
+  if(!inp.value.trim()) return;
+  const list = document.getElementById('chatList');
+  const div = document.createElement('div');
+  div.className = 'msg';
+  div.innerHTML = `<b>Tú (Admin):</b><span>${inp.value}</span>`;
+  list.appendChild(div);
+  list.scrollTop = list.scrollHeight;
+  inp.value = '';
+}
+document.getElementById('titulo').addEventListener('input', e=>{
+  document.getElementById('tituloCentro').textContent = e.target.value || 'Sin título';
+});
+function cambiarResolucion(){
+  const r = document.getElementById('resolucion').value;
+  document.querySelector('.centro-top .pill').textContent = r.split(' ')[0];
+}
+function toggleBtn(btn){ btn.style.opacity = btn.style.opacity==='0.4' ? '1' : '0.4'; }
+</script>
+</body>
+</html>
